@@ -9,6 +9,7 @@ var gulp   = require( 'gulp' ),
 	seq    = require( 'run-sequence' ),
 	rename = require( 'gulp-rename' ),
 	argv   = require( 'yargs' ).argv,
+	svn	   = require('svn-interface'),
 
 	_comma = 'commafix: tired of the hassle of remembering to add/remove a comma for the last var'
 
@@ -17,6 +18,7 @@ var gulp   = require( 'gulp' ),
 ///////////////////////
 
 var ver = argv.ver ? '#' + argv.ver : '';
+var tpls = (argv.excludeTpls) ? '' : '-tpls';
 var vs = ver || 'latest';
 var src = argv.src;
 
@@ -36,8 +38,8 @@ gulp.task( 'curl', function()
 	var v = argv.ver ||
 			(function() {throw new Error( 'manually building requires a valid version number e.g. 0.13.0' )})()
 
-	var norm = 'ui-bootstrap-tpls-' + v + '.js';
-	var mini = 'ui-bootstrap-tpls-' + v + '.min.js';
+	var norm = 'ui-bootstrap' + tpls + '-' + v + '.js';
+	var mini = 'ui-bootstrap' + tpls +  '-' + v + '.min.js';
 
 	return gulp.src( '' )
 		.pipe( exec( 'mkdir ./tmp && ' +
@@ -46,11 +48,18 @@ gulp.task( 'curl', function()
 
 } )
 
+gulp.task( 'svn-templates', function()
+{
+	if (!tpls) {
+		svn.export('https://github.com/angular-ui/bootstrap/tags/' + argv.ver + '/template ./dist/template');
+	}
+} )
+
 gulp.task( 'package', function()
 {
 	src = src || './node_modules/_tmp/dist'
 
-	return gulp.src( [ src + '/ui-bootstrap-tpls-*.js' ] )
+	return gulp.src( [ src + '/ui-bootstrap' + tpls + '-*.js' ] )
 		.pipe( insert.append( 'if(typeof module!==\'undefined\')module.exports=\'ui.bootstrap\';' ) ) //just making this compatible with common-js packages for use w/ browserify
 		.pipe( gulp.dest( './tmp' ) )
 } )
@@ -58,11 +67,11 @@ gulp.task( 'package', function()
 gulp.task( 'rename', function()
 {
 	gulp.src( './tmp/*.min.js' )
-		.pipe( rename( 'angular-bootstrap.min.js' ) )
+		.pipe( rename( 'angular-bootstrap' + tpls + '.min.js' ) )
 		.pipe( gulp.dest( './dist' ) )
 
 	return gulp.src( [ './tmp/*.js', '!./tmp/*.min.js' ] )
-		.pipe( rename( 'angular-bootstrap.js' ) )
+		.pipe( rename( 'angular-bootstrap' + tpls + '.js' ) )
 		.pipe( gulp.dest( './dist' ) )
 } )
 
@@ -77,4 +86,4 @@ gulp.task( 'clean', function()
 ///////////////////////
 
 
-gulp.task( 'default', function() { seq( 'init', 'curl', 'package', 'rename', 'clean' );} )
+gulp.task( 'default', function() { seq( 'init', 'curl', 'svn-templates', 'package', 'rename', 'clean' );} )

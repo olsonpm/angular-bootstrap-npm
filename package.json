@@ -2,7 +2,7 @@
   "name": "angular-bootstrap-npm",
   "version": "0.13.3",
   "description": "An NPM package for using UI.Bootstrap directives with Node projects (via Browserify, etc.)",
-  "main": "./dist/angular-bootstrap.js",
+  "main": "./dist/angular-bootstrap-tpls.js",
   "devDependencies": {
     "gulp-exec": "^2.1.1",
     "yargs": "^1.3.3",
@@ -14,7 +14,8 @@
     "gulp-rename": "^1.2.0"
   },
   "dependencies": {
-    "napa": "^0.4.1"
+    "napa": "^0.4.1",
+    "svn-interface": "^0.4.6"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
